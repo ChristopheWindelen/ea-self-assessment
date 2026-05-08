@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1 — 2026-05-08
+
+- Updated "Contact the INNOCOM Institute" link to https://www.inno.com/contact
+
 ## v1.0 — 2026-05-08
 
 Initial release.

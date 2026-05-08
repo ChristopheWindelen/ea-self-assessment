@@ -18,6 +18,7 @@ Walks through all five INNOCOM capability clusters, collects two scores per clus
 
 | Version | Date | Notes |
 |---------|------|-------|
+| v1.1 | 2026-05-08 | Updated INNOCOM contact link. |
 | v1.0 | 2026-05-08 | Initial release. Five clusters, radar chart, gap analysis, if-then planner. |
 
 ---
