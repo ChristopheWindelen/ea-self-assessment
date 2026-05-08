@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Architect Self-Assessment — INNOCOM Competence Model</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --accent:        #4F46E5;
+            --accent-light:  #EEF2FF;
+            --accent-dark:   #3730A3;
+            --bg:            #F8FAFC;
+            --card:          #FFFFFF;
+            --border:        #E2E8F0;
+            --text:          #0F172A;
+            --text-mid:      #475569;
+            --text-muted:    #94A3B8;
+            --l1-color:      #B45309;
+            --l1-bg:         #FFFBEB;
+            --l1-border:     #FDE68A;
+            --l2-color:      #1D4ED8;
+            --l2-bg:         #EFF6FF;
+            --l2-border:     #BFDBFE;
+            --l3-color:      #065F46;
+            --l3-bg:         #ECFDF5;
+            --l3-border:     #A7F3D0;
+            --radius:        14px;
+            --radius-sm:     9px;
+            --shadow:        0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.05);
+            --shadow-md:     0 4px 12px rgba(15,23,42,.10);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .app { max-width: 780px; margin: 0 auto; padding: 0 24px 100px; }
+
+        /* ── Top bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px 0 18px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 56px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px; font-weight: 700; color: var(--text-muted);
+            letter-spacing: 0.07em; text-transform: uppercase;
+        }
+        .logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+        .progress-wrapper { display: none; align-items: center; gap: 10px; }
+        .progress-bar { width: 140px; height: 4px; background: var(--border); border-radius: 999px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+        .progress-text { font-size: 13px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+
+        /* ── Screens ── */
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeUp 0.35s cubic-bezier(.22,.68,0,1.2); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Welcome ── */
+        .welcome-badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--accent-light); color: var(--accent);
+            font-size: 12px; font-weight: 700; letter-spacing: 0.07em;
+            text-transform: uppercase; padding: 6px 14px; border-radius: 999px; margin-bottom: 28px;
+        }
+        .welcome-title {
+            font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 800;
+            line-height: 1.18; letter-spacing: -0.03em; color: var(--text); margin-bottom: 22px;
+        }
+        .welcome-lead {
+            font-size: 1.0625rem; color: var(--text-mid); line-height: 1.75;
+            max-width: 580px; margin-bottom: 44px;
+        }
+        .meta-row { display: flex; gap: 12px; margin-bottom: 44px; flex-wrap: wrap; }
+        .meta-chip {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 9px;
+            padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text-mid);
+            box-shadow: var(--shadow);
+        }
+        .meta-chip svg { color: var(--accent); flex-shrink: 0; }
+
+        /* ── Cluster screen ── */
+        .cluster-eyebrow {
+            font-size: 12px; font-weight: 700; color: var(--text-muted);
+            letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .cluster-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 10px; }
+        .cluster-desc { font-size: 1rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 36px; max-width: 620px; }
+        .levels-label {
+            font-size: 12px; font-weight: 700; letter-spacing: 0.09em;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px;
+        }
+        .levels-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .level-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px 22px 18px 24px;
+            border-left: 4px solid transparent; box-shadow: var(--shadow);
+        }
+        .level-card.l1 { border-left-color: var(--l1-color); }
+        .level-card.l2 { border-left-color: var(--l2-color); }
+        .level-card.l3 { border-left-color: var(--l3-color); }
+        .level-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 999px; margin-bottom: 9px; border: 1px solid;
+        }
+        .level-badge.l1 { background: var(--l1-bg); color: var(--l1-color); border-color: var(--l1-border); }
+        .level-badge.l2 { background: var(--l2-bg); color: var(--l2-color); border-color: var(--l2-border); }
+        .level-badge.l3 { background: var(--l3-bg); color: var(--l3-color); border-color: var(--l3-border); }
+        .level-card p { font-size: 0.9375rem; color: var(--text-mid); line-height: 1.72; }
+
+        /* ── Calibration prompt ── */
+        .calibration-prompt {
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 0.875rem;
+            color: #78350F;
+            line-height: 1.65;
+        }
+        .calibration-prompt svg { flex-shrink: 0; margin-top: 1px; }
+        .calibration-prompt strong { font-weight: 700; color: #92400E; }
+
+        /* ── Scoring ── */
+        .scoring-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 28px 28px 24px;
+            margin-bottom: 28px; box-shadow: var(--shadow);
+        }
+        .scoring-card-title {
+            font-size: 13px; font-weight: 700; letter-spacing: 0.09em;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 26px;
+        }
+        .scoring-row { margin-bottom: 26px; }
+        .scoring-row:last-child { margin-bottom: 0; }
+        .scoring-question { font-size: 0.9375rem; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+        .score-options { display: flex; gap: 10px; }
+        .score-btn {
+            flex: 1; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--card); cursor: pointer; padding: 14px 6px 12px;
+            text-align: center; transition: border-color .15s, background .15s, box-shadow .15s;
+            font-family: inherit;
+        }
+        .score-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+        .score-btn.selected {
+            border-color: var(--accent); background: var(--accent-light);
+            box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+        }
+        .score-btn .num {
+            display: block; font-size: 1.625rem; font-weight: 800;
+            color: var(--text-muted); line-height: 1; margin-bottom: 4px; transition: color .15s;
+        }
+        .score-btn .lbl {
+            display: block; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); transition: color .15s;
+        }
+        .score-btn.selected .num, .score-btn.selected .lbl { color: var(--accent); }
+        .row-divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+        /* ── Navigation ── */
+        .nav-buttons { display: flex; justify-content: space-between; align-items: center; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px;
+            border-radius: var(--radius-sm); font-family: inherit; font-size: 15px; font-weight: 700;
+            cursor: pointer; border: none; transition: background .15s, box-shadow .15s, opacity .15s;
+            text-decoration: none;
+        }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 3px rgba(79,70,229,.3); }
+        .btn-primary:hover { background: var(--accent-dark); }
+        .btn-secondary { background: var(--card); color: var(--text-mid); border: 1.5px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg); }
+        .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+        /* ── Report ── */
+        .report-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+        .report-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; margin-bottom: 12px; }
+        .report-lead { font-size: 1rem; color: var(--text-mid); line-height: 1.75; max-width: 620px; margin-bottom: 44px; }
+        .section-title { font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+        .chart-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 32px; margin-bottom: 28px; box-shadow: var(--shadow);
+        }
+        .chart-wrapper { max-width: 380px; margin: 0 auto 20px; }
+        .chart-legend { display: flex; gap: 28px; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-mid); font-weight: 500; }
+        .legend-line { width: 20px; height: 3px; border-radius: 3px; }
+
+        /* Gap cards */
+        .gap-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+        .gap-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+            padding: 16px 22px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow);
+        }
+        .gap-card .cn { flex: 1; min-width: 0; }
+        .gap-card .cn-name { font-size: 0.9375rem; font-weight: 700; color: var(--text); }
+        .gap-card .cn-num { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+        .score-pills { display: flex; gap: 8px; }
+        .pill { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .pill-label { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+        .pill-val { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+        .pill-cur { background: #EEF2FF; color: #4338CA; }
+        .pill-eff { background: #FEF3C7; color: #92400E; }
+        .gap-tag { padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+        .tag-under { background: #FEF2F2; color: #991B1B; }
+        .tag-low   { background: #FFF7ED; color: #9A3412; }
+        .tag-ok    { background: #F0F9FF; color: #0C4A6E; }
+        .tag-grow  { background: #ECFDF5; color: #065F46; }
+
+        /* Insight */
+        .insight-box {
+            background: var(--accent-light); border: 1px solid #C7D2FE;
+            border-radius: var(--radius); padding: 26px 28px; margin-bottom: 20px;
+        }
+        .insight-box .ib-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+        .insight-box p { font-size: 1rem; color: #312E81; line-height: 1.75; }
+
+        /* Development plan */
+        .dev-plan {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 26px 28px;
+            margin-bottom: 20px; box-shadow: var(--shadow);
+        }
+        .dev-plan-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+        .dev-item { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .dev-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .dev-cluster-name { font-size: 0.875rem; font-weight: 700; color: var(--text); min-width: 120px; }
+        .dev-cluster-num { font-size: 11px; color: var(--text-muted); font-weight: 500; display: block; margin-top: 2px; }
+        .dev-action { font-size: 0.9375rem; color: var(--text-mid); line-height: 1.65; }
+
+        /* If-then planner */
+        .ifthen-box {
+            background: var(--card); border: 1.5px solid var(--accent);
+            border-radius: var(--radius); padding: 26px 28px;
+            margin-bottom: 20px; box-shadow: var(--shadow);
+        }
+        .ifthen-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+        .ifthen-desc { font-size: 0.875rem; color: var(--text-mid); line-height: 1.65; margin-bottom: 18px; }
+        .ifthen-row {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+            font-size: 0.9375rem; font-weight: 700; color: var(--text);
+        }
+        .ifthen-row:last-child { margin-bottom: 0; }
+        .ifthen-input {
+            flex: 1; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            padding: 10px 14px; font-family: inherit; font-size: 0.9375rem;
+            color: var(--text); background: var(--bg); transition: border-color .15s;
+        }
+        .ifthen-input:focus { outline: none; border-color: var(--accent); background: var(--card); }
+        .ifthen-input::placeholder { color: var(--text-muted); font-weight: 400; }
+
+        /* Warning */
+        .warn-box {
+            background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius);
+            padding: 18px 22px; margin-bottom: 28px; font-size: 0.875rem; color: #78350F; line-height: 1.7;
+        }
+        .warn-box strong { font-weight: 700; color: #92400E; }
+
+        /* Reminder */
+        .reminder-box {
+            background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--radius-sm);
+            padding: 16px 20px; margin-bottom: 32px; display: flex; align-items: flex-start;
+            gap: 12px; font-size: 0.9375rem; color: #14532D; line-height: 1.65;
+        }
+        .reminder-box svg { flex-shrink: 0; margin-top: 2px; }
+        .reminder-box strong { font-weight: 700; }
+
+        /* CTA */
+        .cta-card {
+            background: linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4338CA 100%);
+            border-radius: var(--radius); padding: 48px 40px 40px; text-align: center;
+            color: #fff; margin-bottom: 40px; box-shadow: var(--shadow-md);
+        }
+        .cta-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #A5B4FC; margin-bottom: 14px; }
+        .cta-title { font-size: 1.625rem; font-weight: 800; letter-spacing: -0.02em; color: #fff; margin-bottom: 14px; line-height: 1.25; }
+        .cta-body { font-size: 0.9375rem; color: #C7D2FE; line-height: 1.75; max-width: 480px; margin: 0 auto 32px; }
+        .btn-cta {
+            display: inline-flex; align-items: center; gap: 9px; background: #fff; color: #312E81;
+            padding: 14px 28px; border-radius: var(--radius-sm); font-family: inherit; font-size: 15px;
+            font-weight: 800; border: none; cursor: pointer; text-decoration: none;
+            transition: background .15s; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+        }
+        .btn-cta:hover { background: #EEF2FF; }
+        .cta-footer { margin-top: 20px; }
+        .btn-restart { background: none; border: none; color: #818CF8; font-family: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+        .btn-restart:hover { color: #A5B4FC; }
+
+        /* Effort scale key */
+        .effort-key {
+            display: flex; flex-direction: column; gap: 5px;
+            margin-bottom: 12px; padding: 12px 14px;
+            background: var(--bg); border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+        .ek-item { font-size: 12px; color: var(--text-mid); line-height: 1.55; }
+        .ek-item strong { color: var(--text); font-weight: 700; }
+
+        @media (max-width: 560px) {
+            .meta-row { flex-direction: column; }
+            .score-options { gap: 7px; }
+            .gap-card { flex-wrap: wrap; }
+            .cta-card { padding: 36px 24px 32px; }
+            .dev-item { flex-direction: column; gap: 8px; }
+            .ifthen-row { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="logo">
+            <div class="logo-dot"></div>
+            INNOCOM · Architect Assessment
+        </div>
+        <div class="progress-wrapper" id="progressWrapper">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width:20%"></div>
+            </div>
+            <span class="progress-text" id="progressText">1 of 5</span>
+        </div>
+    </div>
+
+    <!-- ── Welcome ── -->
+    <div class="screen active" id="screen-welcome">
+        <div class="welcome-badge">
+            <svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="currentColor"/></svg>
+            Enterprise Architecture
+        </div>
+        <h1 class="welcome-title">What have you actually<br>assessed about yourself?</h1>
+        <p class="welcome-lead">Most architects know what good architecture looks like. This self-assessment, based on the INNOCOM Institute's competence model, is about something most architects have never honestly inventoried: what they cannot yet do at the executive table.</p>
+
+        <div class="meta-row">
+            <div class="meta-chip">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                About 10 minutes
+            </div>
+            <div class="meta-chip">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                5 capability clusters
+            </div>
+            <div class="meta-chip">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Gap report + action plan
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="startAssessment()">
+            Begin assessment
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+    </div>
+
+    <!-- ── Cluster screens injected by JS ── -->
+
+    <!-- ── Report ── -->
+    <div class="screen" id="screen-report">
+        <div class="report-eyebrow">Your results</div>
+        <h1 class="report-title">Your capability profile</h1>
+        <p class="report-lead" id="reportLead"></p>
+
+        <div class="section-title">Capability vs. development investment</div>
+        <div class="chart-card">
+            <div class="chart-wrapper">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <div class="legend-line" style="background:#4F46E5"></div>
+                    Where I am today
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background:#F59E0B"></div>
+                    Development investment
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Gap analysis by cluster</div>
+        <div class="gap-grid" id="gapGrid"></div>
+
+        <div class="insight-box" id="insightBox"></div>
+
+        <div class="section-title">Your 90-day action plan</div>
+        <div class="dev-plan" id="devPlan"></div>
+
+        <div class="section-title">Turn insight into action</div>
+        <div class="ifthen-box">
+            <div class="ifthen-label">Implementation plan</div>
+            <p class="ifthen-desc">Research by Gollwitzer and Sheeran (2006) across 94 studies found that writing a specific if-then plan produces a medium-to-large improvement in follow-through compared to a general intention to change. Fill in your plan below, then save or screenshot it.</p>
+            <div class="ifthen-row">
+                <span>When I am in</span>
+                <input class="ifthen-input" id="ifthenSituation" type="text" placeholder="a specific meeting or situation this week..." />
+            </div>
+            <div class="ifthen-row">
+                <span>I will</span>
+                <input class="ifthen-input" id="ifthenAction" type="text" placeholder="the Level 3 behavior for your biggest gap cluster..." />
+            </div>
+        </div>
+
+        <div class="warn-box">
+            <strong>A note on accuracy.</strong> Research on professional self-assessment shows that both columns are susceptible to inflation. For a more reliable picture, ask a colleague who has observed you to score clusters 1 and 2 independently, then compare. External ratings are more accurate precisely where the gap is largest.
+        </div>
+
+        <div class="reminder-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div><strong>Set a 90-day reminder</strong> to retake this assessment. Development that is not remeasured does not happen. Your scores should move. If they do not, the activities are not the right ones.</div>
+        </div>
+
+        <div class="section-title">Want to go further?</div>
+        <div class="cta-card">
+            <div class="cta-eyebrow">Professional Development</div>
+            <h2 class="cta-title">Ready for a structured<br>architect assessment?</h2>
+            <p class="cta-body">The INNOCOM Institute developed the competence model behind this self-assessment. Their certified development programs offer structured assessment, individual coaching, and development paths grounded in the same framework — for architects who want to close the gap with evidence, not guesswork.</p>
+            <a href="https://innocom.eu" target="_blank" class="btn-cta">
+                Contact the INNOCOM Institute
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+            </a>
+            <div class="cta-footer">
+                <button class="btn-restart" onclick="restartAssessment()">Start the assessment again</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+/* ── Configuration — edit here to customise or extend the tool ── */
+const CONFIG = {
+    assessmentTitle: "Enterprise Architect Self-Assessment",
+    modelCredit:     "INNOCOM Competence Model, 2021",
+    axis1Label:      "Where I am today",
+    axis2Label:      "Development investment",
+    innocomUrl:      "https://innocom.eu",
+    articleUrl:      ""   // set to the Medium article URL to add a back-link in the CTA
+};
+
+const CLUSTERS = [
+    {
+        name: "Trusted Advisor",
+        num: "Cluster 1 of 5",
+        desc: "Building and sustaining meaningful relationships throughout the organisation, learning from critical reflection on professional practice, and operating with ethical rigour.",
+        levels: [
+            "You invest in professional relationships when a specific need arises. You respond to feedback when it is offered. You reflect on your practice after things go wrong. You engage with difficult colleagues when the situation demands it.",
+            "You invest in professional relationships across the organisation before a specific need arises. You seek feedback on your practice, reflect on it, and adjust your approach. You engage with people who are difficult or who disagree with you, rather than working around them.",
+            "You hold yourself accountable for the quality and reach of your professional relationships as a performance outcome, not a soft skill. You initiate critical reflection on your own practice without prompting, including reflection that surfaces uncomfortable conclusions, and you act on what you find. You invest in people who have no immediate value to you, consistently and without expecting a return."
+        ],
+        devActivity: "Identify one professional relationship you have been postponing. Send one substantive message this week — not a check-in, but the real conversation you have been delaying."
+    },
+    {
+        name: "Strategic Ambition",
+        num: "Cluster 2 of 5",
+        desc: "Challenging and refining strategy, discussing business models, and translating strategy into a form every level of the organisation can act on.",
+        levels: [
+            "You understand the strategies you are given and can explain them to others. You raise concerns about strategic inconsistencies with peers or in private, but not typically in the room where the strategy is being set. You present what you are asked to present.",
+            "You identify inconsistencies in strategies and name them to the people responsible. You offer a view when asked and defend it with evidence. You take responsibility for making strategy comprehensible for teams who did not participate in creating it.",
+            "You challenge a strategy you believe is wrong in rooms where you were not invited to challenge anything, including with people who have authority over you. You take responsibility for whether the strategy is understood and executable at every level, not only the level you were asked to address. You name what is missing before anyone asks you to."
+        ],
+        devActivity: "In your next meeting with a senior stakeholder, name one position. Not a question, not three options. Say what you believe. If you would normally step back, stay in the room instead."
+    },
+    {
+        name: "Architectural Focus",
+        num: "Cluster 3 of 5",
+        desc: "Understanding the organisation's culture and sub-cultures, conducting impact analysis, and making complexity legible for all stakeholders.",
+        levels: [
+            "You describe the organisation's culture accurately and conduct impact analysis when asked. You document complexity and present your findings clearly. You adapt your communication style when you are asked to.",
+            "You assess sub-cultures across the organisation and factor them into your proposals. You anticipate where your analysis will be resisted and prepare for those conversations in advance. You make complexity legible for non-technical audiences without being asked to simplify.",
+            "You understand the culture and sub-cultures well enough to predict how a proposal will land in each part of the organisation before you present it, and you design your approach accordingly. You hold yourself responsible for whether your analysis actually changes what the organisation does, not only for the quality of the analysis itself."
+        ],
+        devActivity: "Before your next proposal, map the resistance first. Name two people who will push back and identify why. Design your approach around that map before you refine the content."
+    },
+    {
+        name: "Execution and Delivery",
+        num: "Cluster 4 of 5",
+        desc: "Portfolio management, master planning, risk and governance, and translating architecture into phased implementation.",
+        levels: [
+            "You contribute to business cases and estimates when asked. You document trade-offs and present them clearly. You flag risks when you see them.",
+            "You develop estimates and business cases independently. You recommend a course of action and defend it. You track implementation progress and raise risks before they become problems.",
+            "You take accountability for estimates and business cases, including for programmes you did not design. You name uncomfortable trade-offs in the portfolio rather than leaving them implicit or confined to an appendix. You hold yourself responsible for outcomes across the delivery portfolio, not only for the quality of the plans."
+        ],
+        devActivity: "Put your name on an estimate or business case you did not design. Own the number, not only the analysis behind it. If it turns out to be wrong, be the person who corrects it."
+    },
+    {
+        name: "Solution Design",
+        num: "Cluster 5 of 5",
+        desc: "Business architecture, integration, data, security, and emerging technology, assessed and led from a strategic rather than purely technical position.",
+        levels: [
+            "You apply established patterns in familiar contexts and follow the standards that exist. You evaluate new technologies when asked and report your findings. You participate in design decisions when invited.",
+            "You select among established patterns based on context and justify your choices. You evaluate new technologies against strategic criteria, not only technical preference. You guide others in design decisions.",
+            "You assess new technologies from a strategic position and communicate your view to the people who decide what to invest in, not only those who asked for the evaluation. You set new design standards rather than only applying existing ones. You hold yourself accountable for the quality of architectural decisions across teams, not only your own."
+        ],
+        devActivity: "Take your next technology assessment to a non-technical senior leader before you present it to the technical team. Frame business risk and investment return first."
+    }
+];
+
+const LEVEL_NAMES  = ['Emerging',  'Developing', 'Leading'];
+const EFFORT_NAMES = ['Minimal', 'Moderate', 'Active'];
+const EFFORT_DESCS = [
+    "No structured development activity. Growth happens only as a byproduct of doing the job.",
+    "Some intentional effort — occasional reflection, feedback, or reading — but not structured or regular.",
+    "Deliberate, structured practice with feedback and targeted stretch opportunities."
+];
+
+const N = CLUSTERS.length;
+let scores = { cur: Array(N).fill(0), eff: Array(N).fill(0) };
+let screensBuilt = false;
+let radarChart = null;
+
+/* ── Boot ── */
+function startAssessment() {
+    if (!screensBuilt) { buildClusterScreens(); screensBuilt = true; }
+    showScreen('screen-cluster-0');
+    document.getElementById('progressWrapper').style.display = 'flex';
+    setProgress(0);
+}
+
+/* ── Build cluster screens ── */
+function buildClusterScreens() {
+    const app = document.querySelector('.app');
+    const reportEl = document.getElementById('screen-report');
+
+    CLUSTERS.forEach((c, i) => {
+        const div = document.createElement('div');
+        div.className = 'screen';
+        div.id = `screen-cluster-${i}`;
+        div.innerHTML = `
+            <div style="margin-bottom:36px">
+                <div class="cluster-eyebrow">${c.num}</div>
+                <h2 class="cluster-title">${c.name}</h2>
+                <p class="cluster-desc">${c.desc}</p>
+                <div class="levels-label">Read each level carefully before scoring</div>
+                <div class="levels-grid">
+                    ${c.levels.map((txt, li) => `
+                        <div class="level-card l${li+1}">
+                            <span class="level-badge l${li+1}">Level ${li+1} &mdash; ${LEVEL_NAMES[li]}</span>
+                            <p>${txt}</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="calibration-prompt">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <div><strong>Before you score:</strong> think of one specific moment from the last 90 days where this cluster mattered — a conversation, a decision, a meeting. If you cannot name a concrete example, your score is likely one level higher than your evidence justifies.</div>
+                </div>
+            </div>
+
+            <div class="scoring-card">
+                <div class="scoring-card-title">Your scores for this cluster</div>
+                <div class="scoring-row">
+                    <div class="scoring-question">Where I am today</div>
+                    <div class="score-options">
+                        ${[1,2,3].map(n => `
+                            <button class="score-btn" id="cur-${i}-${n}" onclick="pick(${i},'cur',${n})">
+                                <span class="num">${n}</span>
+                                <span class="lbl">${LEVEL_NAMES[n-1]}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="row-divider"></div>
+                <div class="scoring-row">
+                    <div class="scoring-question">Where my development effort is going</div>
+                    <div class="effort-key">
+                        ${EFFORT_NAMES.map((name, ni) => `<div class="ek-item"><strong>${ni+1} — ${name}:</strong> ${EFFORT_DESCS[ni]}</div>`).join('')}
+                    </div>
+                    <div class="score-options">
+                        ${[1,2,3].map(n => `
+                            <button class="score-btn" id="eff-${i}-${n}" onclick="pick(${i},'eff',${n})">
+                                <span class="num">${n}</span>
+                                <span class="lbl">${EFFORT_NAMES[n-1]}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" onclick="goBack(${i})" ${i === 0 ? 'style="visibility:hidden"' : ''}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Previous
+                </button>
+                <button class="btn btn-primary" id="next-${i}" onclick="goNext(${i})" disabled>
+                    ${i < N - 1 ? 'Next cluster' : 'View my report'}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+        `;
+        app.insertBefore(div, reportEl);
+    });
+}
+
+/* ── Score selection ── */
+function pick(ci, type, val) {
+    scores[type][ci] = val;
+    [1,2,3].forEach(n => {
+        document.getElementById(`${type}-${ci}-${n}`).classList.toggle('selected', n === val);
+    });
+    if (scores.cur[ci] > 0 && scores.eff[ci] > 0) {
+        document.getElementById(`next-${ci}`).removeAttribute('disabled');
+    }
+}
+
+/* ── Navigation ── */
+function goNext(ci) {
+    if (ci < N - 1) { showScreen(`screen-cluster-${ci+1}`); setProgress(ci+1); }
+    else { buildReport(); showScreen('screen-report'); document.getElementById('progressWrapper').style.display = 'none'; }
+}
+function goBack(ci) {
+    if (ci > 0) { showScreen(`screen-cluster-${ci-1}`); setProgress(ci-1); }
+}
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function setProgress(idx) {
+    document.getElementById('progressFill').style.width = ((idx+1)/N*100) + '%';
+    document.getElementById('progressText').textContent = `${idx+1} of ${N}`;
+}
+
+/* ── Report ── */
+function buildReport() {
+    const cur = scores.cur;
+    const eff = scores.eff;
+
+    // Lead
+    const best = cur.indexOf(Math.max(...cur));
+    document.getElementById('reportLead').textContent =
+        `You completed all five clusters. Your strongest current capability is ${CLUSTERS[best].name}. The chart and gap analysis below show where your development investment is — and is not — keeping pace.`;
+
+    // Radar chart
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), {
+        type: 'radar',
+        data: {
+            labels: ['Trusted\nAdvisor', 'Strategic\nAmbition', 'Architectural\nFocus', 'Execution &\nDelivery', 'Solution\nDesign'],
+            datasets: [
+                { label: 'Where I am today', data: cur, borderColor: '#4F46E5', backgroundColor: 'rgba(79,70,229,.12)', borderWidth: 2.5, pointBackgroundColor: '#4F46E5', pointRadius: 5 },
+                { label: 'Development investment', data: eff, borderColor: '#F59E0B', backgroundColor: 'rgba(245,158,11,.12)', borderWidth: 2.5, pointBackgroundColor: '#F59E0B', pointRadius: 5 }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { r: { min: 0, max: 3, ticks: { stepSize: 1, font: { size: 11 }, color: '#94A3B8', backdropColor: 'transparent' }, pointLabels: { font: { size: 12, weight: '600' }, color: '#475569' }, grid: { color: '#E2E8F0' }, angleLines: { color: '#E2E8F0' } } },
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => {
+                const isEffort = ctx.datasetIndex === 1;
+                const nameArr  = isEffort ? ['', ...EFFORT_NAMES] : ['', ...LEVEL_NAMES];
+                return ` ${ctx.dataset.label}: ${ctx.raw} — ${nameArr[ctx.raw] || ''}`;
+            } } } }
+        }
+    });
+
+    // Gap grid
+    document.getElementById('gapGrid').innerHTML = CLUSTERS.map((c, i) => {
+        const gap = cur[i] - eff[i];
+        let tagClass, tagText;
+        if      (gap >= 2) { tagClass = 'tag-under'; tagText = 'Underinvesting'; }
+        else if (gap === 1) { tagClass = 'tag-low';   tagText = 'Low investment'; }
+        else if (gap === 0) { tagClass = 'tag-ok';    tagText = 'Aligned'; }
+        else                { tagClass = 'tag-grow';  tagText = 'Growing into'; }
+        return `
+        <div class="gap-card">
+            <div class="cn"><div class="cn-name">${c.name}</div><div class="cn-num">Cluster ${i+1}</div></div>
+            <div class="score-pills">
+                <div class="pill"><span class="pill-label">Today</span><div class="pill-val pill-cur">${cur[i]}</div></div>
+                <div class="pill"><span class="pill-label">Effort</span><div class="pill-val pill-eff">${eff[i]}</div></div>
+            </div>
+            <span class="gap-tag ${tagClass}">${tagText}</span>
+        </div>`;
+    }).join('');
+
+    // Insight
+    const c1eff = eff[0], c2eff = eff[1], c1gap = cur[0]-eff[0], c2gap = cur[1]-eff[1];
+    let insightText;
+    if (c1eff <= 1 && c2eff <= 1)
+        insightText = `Your development investment in Trusted Advisor and Strategic Ambition is low — the two clusters that most directly determine your impact at the executive level. These capabilities are rarely measured by job descriptions or performance reviews, which is exactly why the investment gap persists. This is where to focus first.`;
+    else if (c2eff <= 1)
+        insightText = `Strategic Ambition shows a significant investment gap. This is the cluster that determines whether your work shapes decisions or only informs them. The shift from informing to framing is attitudinal — it requires claiming responsibility you were not explicitly given. The development activity below names the first concrete step.`;
+    else if (c1eff <= 1)
+        insightText = `Trusted Advisor shows a significant investment gap. The professional level here is not about being liked — it is about holding yourself accountable for the quality of your professional relationships as a performance outcome. That includes relationships with people who are difficult or who disagree with you.`;
+    else if (c1gap >= 1 || c2gap >= 1)
+        insightText = `You are investing in clusters 1 and 2, but your investment is lower than your current capability in the areas where you are already strong. The pattern is common: architects develop where they are rewarded, and rewards concentrate in technical delivery. Rebalancing your effort toward strategic and relationship capabilities is what creates executive impact.`;
+    else
+        insightText = `Your investment profile is well-aligned with your capability profile. The next question is whether your development is producing real outcomes — decisions influenced, strategies challenged, relationships built before they were needed. Investment without outcome is not yet development.`;
+
+    document.getElementById('insightBox').innerHTML = `<div class="ib-label">Key finding</div><p>${insightText}</p>`;
+
+    // Development plan — top gaps
+    const gapsWithActivity = CLUSTERS.map((c, i) => ({ i, gap: cur[i] - eff[i], name: c.name }))
+        .filter(x => x.gap >= 1)
+        .sort((a, b) => b.gap - a.gap)
+        .slice(0, 3);
+
+    const devPlanEl = document.getElementById('devPlan');
+    if (gapsWithActivity.length > 0) {
+        devPlanEl.innerHTML = `
+            <div class="dev-plan-label">One action per gap — start with the first</div>
+            ${gapsWithActivity.map(g => `
+                <div class="dev-item">
+                    <div><div class="dev-cluster-name">${CLUSTERS[g.i].name}<span class="dev-cluster-num">Cluster ${g.i + 1}</span></div></div>
+                    <div class="dev-action">${CLUSTERS[g.i].devActivity}</div>
+                </div>
+            `).join('')}
+        `;
+        // Pre-fill if-then with biggest gap
+        const top = gapsWithActivity[0];
+        document.getElementById('ifthenAction').placeholder = `e.g. name one position, not three options (${CLUSTERS[top.i].name})`;
+    } else {
+        devPlanEl.innerHTML = `
+            <div class="dev-plan-label">Your development priority</div>
+            <p style="color:var(--text-mid);font-size:0.9375rem;line-height:1.7">Your scores show strong alignment. The next question is whether your effort is producing real outcomes: decisions influenced, strategies challenged, relationships built before they were needed. The if-then plan below is where to start.</p>
+        `;
+    }
+}
+
+/* ── Restart ── */
+function restartAssessment() {
+    scores = { cur: Array(N).fill(0), eff: Array(N).fill(0) };
+    CLUSTERS.forEach((_, i) => { const el = document.getElementById(`screen-cluster-${i}`); if (el) el.remove(); });
+    screensBuilt = false;
+    if (radarChart) { radarChart.destroy(); radarChart = null; }
+    showScreen('screen-welcome');
+    document.getElementById('progressWrapper').style.display = 'none';
+}
+
+</script>
+</body>
+</html>
